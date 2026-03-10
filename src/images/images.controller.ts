@@ -3,6 +3,7 @@ import {
   Controller,
   FileTypeValidator,
   Get,
+  HttpStatus,
   MaxFileSizeValidator,
   Param,
   ParseFilePipe,
@@ -55,9 +56,13 @@ export class ImagesController {
   async upload(
     @UploadedFile(
       new ParseFilePipe({
+        errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
         validators: [
           new MaxFileSizeValidator({ maxSize: MAX_FILE_SIZE }),
-          new FileTypeValidator({ fileType: ALLOWED_IMAGE_TYPES }),
+          new FileTypeValidator({
+            fileType: ALLOWED_IMAGE_TYPES,
+            fallbackToMimetype: true,
+          }),
         ],
       }),
     )

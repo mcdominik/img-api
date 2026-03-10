@@ -1,6 +1,9 @@
 import { HttpStatus } from '@nestjs/common';
+import type { Server } from 'http';
 import request from 'supertest';
 import { createTestApp } from '../utils/bootstrap';
+import { ImageResponseDto } from '../../src/images/dto/image-response.dto';
+import { PaginatedImagesResponseDto } from '../../src/images/dto/paginated-images-response.dto';
 
 describe('Images - reads', () => {
   let bootstrap: Awaited<ReturnType<typeof createTestApp>>;
@@ -22,25 +25,29 @@ describe('Images - reads', () => {
       const response = await request(bootstrap.app.getHttpServer()).get(
         '/images',
       );
+      const body = response.body as PaginatedImagesResponseDto;
 
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body.data).toEqual([]);
-      expect(response.body.meta.total).toBe(0);
+      expect(body.data).toEqual([]);
+      expect(body.meta.total).toBe(0);
     });
 
     it('returns all images with correct structure', async () => {
-      await bootstrap.models.imageRepository.save([
+      await bootstrap.models.imageRepository.save(
         bootstrap.utils.createImageFixture({ title: 'Image A' }),
+      );
+      await bootstrap.models.imageRepository.save(
         bootstrap.utils.createImageFixture({ title: 'Image B' }),
-      ]);
-
-      const response = await request(bootstrap.app.getHttpServer()).get(
-        '/images',
       );
 
+      const response = await request(
+        bootstrap.app.getHttpServer() as Server,
+      ).get('/images');
+      const body = response.body as PaginatedImagesResponseDto;
+
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body.data).toHaveLength(2);
-      expect(response.body.meta).toEqual({
+      expect(body.data).toHaveLength(2);
+      expect(body.meta).toEqual({
         total: 2,
         page: 1,
         limit: 20,
@@ -49,34 +56,42 @@ describe('Images - reads', () => {
     });
 
     it('filters images by title (case-insensitive)', async () => {
-      await bootstrap.models.imageRepository.save([
+      await bootstrap.models.imageRepository.save(
         bootstrap.utils.createImageFixture({ title: 'Mountain View' }),
+      );
+      await bootstrap.models.imageRepository.save(
         bootstrap.utils.createImageFixture({ title: 'Ocean Sunset' }),
-      ]);
-
-      const response = await request(bootstrap.app.getHttpServer()).get(
-        '/images?title=mountain',
       );
 
+      const response = await request(
+        bootstrap.app.getHttpServer() as Server,
+      ).get('/images?title=mountain');
+      const body = response.body as PaginatedImagesResponseDto;
+
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body.data).toHaveLength(1);
-      expect(response.body.data[0].title).toBe('Mountain View');
+      expect(body.data).toHaveLength(1);
+      expect(body.data[0].title).toBe('Mountain View');
     });
 
     it('returns correct pagination meta', async () => {
-      await bootstrap.models.imageRepository.save([
+      await bootstrap.models.imageRepository.save(
         bootstrap.utils.createImageFixture({ title: 'Image 1' }),
+      );
+      await bootstrap.models.imageRepository.save(
         bootstrap.utils.createImageFixture({ title: 'Image 2' }),
+      );
+      await bootstrap.models.imageRepository.save(
         bootstrap.utils.createImageFixture({ title: 'Image 3' }),
-      ]);
+      );
 
       const response = await request(bootstrap.app.getHttpServer()).get(
         '/images?page=1&limit=2',
       );
+      const body = response.body as PaginatedImagesResponseDto;
 
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body.data).toHaveLength(2);
-      expect(response.body.meta).toEqual({
+      expect(body.data).toHaveLength(2);
+      expect(body.meta).toEqual({
         total: 3,
         page: 1,
         limit: 2,
@@ -96,7 +111,7 @@ describe('Images - reads', () => {
       );
 
       expect(response.status).toBe(HttpStatus.OK);
-      expect(response.body).toMatchObject({
+      expect(response.body as ImageResponseDto).toMatchObject({
         id: image.id,
         title: 'Test Image',
         url: image.url,

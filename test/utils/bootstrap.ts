@@ -15,6 +15,7 @@ export const createTestApp = async () => {
   db.public.registerFunction({
     name: 'uuid_generate_v4',
     returns: DataType.text,
+    impure: true,
     implementation: () => randomUUID(),
   });
 

@@ -30,10 +30,10 @@ describe('Images - writes', () => {
       expect(response.status).toBe(HttpStatus.CREATED);
       expect(response.body).toMatchObject({
         title: 'Test Upload',
-        url: expect.any(String),
-        id: expect.any(String),
-        width: expect.any(Number),
-        height: expect.any(Number),
+        url: expect.any(String), // eslint-disable-line
+        id: expect.any(String), // eslint-disable-line
+        width: expect.any(Number), // eslint-disable-line
+        height: expect.any(Number), // eslint-disable-line
       });
     });
 
