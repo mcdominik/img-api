@@ -31,7 +31,7 @@ Upload and process an image.
   - `width` (optional) — Target output width in pixels
   - `height` (optional) — Target output height in pixels
 
-All images are converted to WebP format at quality 85. (sharp's default) When `width` and/or `height` are provided, the image is scaled to fit within those dimensions while preserving the aspect ratio (`fit: inside`). If omitted, the original dimensions are kept.
+All images are converted to WebP (good balance between quality and size) [sharp library](https://www.npmjs.com/package/sharp). When `width` and/or `height` are provided, the image is scaled to fit within those dimensions while preserving the aspect ratio (`fit: inside` - resize the image to be as large as possible while ensuring its dimensions are less than or equal to both those specified). If omitted, the original dimensions are kept.
 
 ### GET /images
 
