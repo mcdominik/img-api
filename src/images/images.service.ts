@@ -161,6 +161,7 @@ export class ImagesService {
     let best: { buffer: Buffer; width: number; height: number } | null = null;
 
     while (low <= high) {
+      // binary search for the optimal quality
       const quality = Math.round((low + high) / 2);
       const { data, info } = await this.encodeToWebp(
         buffer,
