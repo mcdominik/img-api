@@ -4,13 +4,7 @@ REST API for uploading, processing, and managing images. Built with NestJS, Post
 
 ## Setup
 
-### 1. Install dependencies
-
-```bash
-npm install
-```
-
-### 2. Spin docker
+### Spin docker
 
 ```bash
 docker compose up -d
@@ -22,7 +16,7 @@ Swagger UI is available at [http://localhost:3000/api](http://localhost:3000/api
 
 ## Storage panel
 
-MiniIO Browser is available at [http://localhost:9001](http://localhost:9001) when the application is running.
+MiniIO GUI is available at [http://localhost:9001](http://localhost:9001) when the application is running.
 
 ## API Endpoints
 
@@ -32,12 +26,12 @@ Upload and process an image.
 
 - **Content-Type:** `multipart/form-data`
 - **Fields:**
-  - `file` (required) — Image file (JPEG, PNG, WebP, GIF). Max 10 MB.
+  - `file` (required) — Image file (JPEG, PNG, WebP). Max 10 MB.
   - `title` (required) — Image title
   - `width` (optional) — Target output width in pixels
   - `height` (optional) — Target output height in pixels
 
-All images are converted to WebP format at quality 85. When `width` and/or `height` are provided, the image is scaled to fit within those dimensions while preserving the aspect ratio (`fit: inside`). If omitted, the original dimensions are kept.
+All images are converted to WebP format at quality 85. (sharp's default) When `width` and/or `height` are provided, the image is scaled to fit within those dimensions while preserving the aspect ratio (`fit: inside`). If omitted, the original dimensions are kept.
 
 ### GET /images
 

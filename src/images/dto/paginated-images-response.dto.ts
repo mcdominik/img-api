@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ImageResponseDto } from './image-response.dto.js';
+import { ImageResponseDto } from './image-response.dto';
 
 export class PaginationMeta {
   @ApiProperty()

@@ -28,7 +28,7 @@ import { ImageResponseDto } from './dto/image-response.dto.js';
 import { PaginatedImagesResponseDto } from './dto/paginated-images-response.dto.js';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = /^image\/(jpeg|png|webp|gif)$/;
+const ALLOWED_IMAGE_TYPES = /^image\/(jpeg|png|webp)$/;
 
 @ApiTags('images')
 @Controller('images')
@@ -36,7 +36,7 @@ export class ImagesController {
   constructor(private readonly imagesService: ImagesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Upload an image' })
+  @ApiOperation({ summary: 'Upload an image (JPEG/PNG/WebP)' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {

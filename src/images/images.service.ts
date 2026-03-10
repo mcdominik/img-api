@@ -14,7 +14,7 @@ import { GetImagesQueryDto } from './dto/get-images-query.dto.js';
 import { ImageResponseDto } from './dto/image-response.dto.js';
 import { PaginatedImagesResponseDto } from './dto/paginated-images-response.dto.js';
 
-const DEFAULT_QUALITY = 85;
+const DEFAULT_SHARP_QUALITY = 85;
 
 @Injectable()
 export class ImagesService {
@@ -106,11 +106,10 @@ export class ImagesService {
         buffer,
         targetWidth,
         targetHeight,
-        DEFAULT_QUALITY,
+        DEFAULT_SHARP_QUALITY,
       );
       return { buffer: data, width: info.width, height: info.height };
-    } catch (error) {
-      if (error instanceof BadRequestException) throw error;
+    } catch {
       throw new BadRequestException('Failed to process image.');
     }
   }

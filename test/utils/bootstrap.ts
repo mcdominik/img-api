@@ -11,6 +11,9 @@ import { R2Service } from '../../src/storage/r2/r2.service';
 import sharp from 'sharp';
 
 export const createTestApp = async () => {
+  const DEFAULT_IMAGE_WIDTH = 100;
+  const DEFAULT_IMAGE_HEIGHT = 100;
+
   const db = newDb();
   db.public.registerFunction({
     name: 'uuid_generate_v4',
@@ -78,13 +81,16 @@ export const createTestApp = async () => {
     };
   };
 
-  const createTestImageBuffer = async (): Promise<Buffer> => {
+  const createTestImageBuffer = async (
+    overrides: { width?: number; height?: number } = {},
+  ): Promise<Buffer> => {
     return sharp({
       create: {
-        width: 100,
-        height: 100,
+        width: DEFAULT_IMAGE_WIDTH,
+        height: DEFAULT_IMAGE_HEIGHT,
         channels: 3,
         background: { r: 100, g: 150, b: 200 },
+        ...overrides,
       },
     })
       .jpeg()
@@ -111,7 +117,9 @@ export const createTestApp = async () => {
     },
     utils: {
       createImageFixture,
-      testImageBuffer: await createTestImageBuffer(),
+      createTestImageBuffer,
+      DEFAULT_IMAGE_WIDTH,
+      DEFAULT_IMAGE_HEIGHT,
     },
   };
 };

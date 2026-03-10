@@ -1,5 +1,4 @@
 import { HttpStatus } from '@nestjs/common';
-import type { Server } from 'http';
 import request from 'supertest';
 import { createTestApp } from '../utils/bootstrap';
 import { ImageResponseDto } from '../../src/images/dto/image-response.dto';
@@ -40,9 +39,9 @@ describe('Images - reads', () => {
         bootstrap.utils.createImageFixture({ title: 'Image B' }),
       );
 
-      const response = await request(
-        bootstrap.app.getHttpServer() as Server,
-      ).get('/images');
+      const response = await request(bootstrap.app.getHttpServer()).get(
+        '/images',
+      );
       const body = response.body as PaginatedImagesResponseDto;
 
       expect(response.status).toBe(HttpStatus.OK);
@@ -63,9 +62,9 @@ describe('Images - reads', () => {
         bootstrap.utils.createImageFixture({ title: 'Ocean Sunset' }),
       );
 
-      const response = await request(
-        bootstrap.app.getHttpServer() as Server,
-      ).get('/images?title=mountain');
+      const response = await request(bootstrap.app.getHttpServer()).get(
+        '/images?title=mountain',
+      );
       const body = response.body as PaginatedImagesResponseDto;
 
       expect(response.status).toBe(HttpStatus.OK);

@@ -11,10 +11,10 @@ export class ImageEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   title: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 2048 })
   url: string;
 
   @Column('int')

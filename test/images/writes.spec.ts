@@ -1,5 +1,5 @@
-import { HttpStatus } from '@nestjs/common';
 import request from 'supertest';
+import { HttpStatus } from '@nestjs/common';
 import { createTestApp } from '../utils/bootstrap';
 
 describe('Images - writes', () => {
@@ -22,7 +22,7 @@ describe('Images - writes', () => {
       const response = await request(bootstrap.app.getHttpServer())
         .post('/images')
         .field('title', 'Test Upload')
-        .attach('file', bootstrap.utils.testImageBuffer, {
+        .attach('file', await bootstrap.utils.createTestImageBuffer(), {
           filename: 'test.jpg',
           contentType: 'image/jpeg',
         });
@@ -41,7 +41,7 @@ describe('Images - writes', () => {
       await request(bootstrap.app.getHttpServer())
         .post('/images')
         .field('title', 'Persisted Image')
-        .attach('file', bootstrap.utils.testImageBuffer, {
+        .attach('file', await bootstrap.utils.createTestImageBuffer(), {
           filename: 'test.jpg',
           contentType: 'image/jpeg',
         });
@@ -51,24 +51,23 @@ describe('Images - writes', () => {
       expect(images[0].title).toBe('Persisted Image');
     });
 
-    it('returns 400 when title is missing', async () => {
+    it('returns bad request when title is missing', async () => {
       const response = await request(bootstrap.app.getHttpServer())
         .post('/images')
-        .attach('file', bootstrap.utils.testImageBuffer, {
+        .attach('file', await bootstrap.utils.createTestImageBuffer(), {
           filename: 'test.jpg',
           contentType: 'image/jpeg',
         });
-
       expect(response.status).toBe(HttpStatus.BAD_REQUEST);
     });
 
-    it('returns error when no file is provided', async () => {
+    it('returns 422 when no file is provided', async () => {
       const response = await request(bootstrap.app.getHttpServer())
         .post('/images')
         .field('title', 'No File');
+      console.log(response.body);
 
-      expect(response.status).toBeGreaterThanOrEqual(HttpStatus.BAD_REQUEST);
-      expect(response.status).toBeLessThan(HttpStatus.INTERNAL_SERVER_ERROR);
+      expect(response.status).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
     });
 
     it('returns 422 when file type is not an image', async () => {
@@ -103,7 +102,7 @@ describe('Images - writes', () => {
         .field('title', 'Resized')
         .field('width', '50')
         .field('height', '50')
-        .attach('file', bootstrap.utils.testImageBuffer, {
+        .attach('file', await bootstrap.utils.createTestImageBuffer(), {
           filename: 'test.jpg',
           contentType: 'image/jpeg',
         });
@@ -118,7 +117,7 @@ describe('Images - writes', () => {
         .post('/images')
         .field('title', 'Width Only')
         .field('width', '50')
-        .attach('file', bootstrap.utils.testImageBuffer, {
+        .attach('file', await bootstrap.utils.createTestImageBuffer(), {
           filename: 'test.jpg',
           contentType: 'image/jpeg',
         });
@@ -132,14 +131,14 @@ describe('Images - writes', () => {
       const response = await request(bootstrap.app.getHttpServer())
         .post('/images')
         .field('title', 'Original Size')
-        .attach('file', bootstrap.utils.testImageBuffer, {
+        .attach('file', await bootstrap.utils.createTestImageBuffer(), {
           filename: 'test.jpg',
           contentType: 'image/jpeg',
         });
 
       expect(response.status).toBe(HttpStatus.CREATED);
-      expect(response.body.width).toBe(100); // eslint-disable-line
-      expect(response.body.height).toBe(100); // eslint-disable-line
+      expect(response.body.width).toBe(bootstrap.utils.DEFAULT_IMAGE_WIDTH); // eslint-disable-line
+      expect(response.body.height).toBe(bootstrap.utils.DEFAULT_IMAGE_HEIGHT); // eslint-disable-line
     });
   });
 });
