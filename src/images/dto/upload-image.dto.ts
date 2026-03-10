@@ -8,10 +8,17 @@ export class UploadImageDto {
   @IsNotEmpty()
   title: string;
 
-  @ApiPropertyOptional({ description: 'Target maximum file size in bytes' })
+  @ApiPropertyOptional({ description: 'Target output width in pixels' })
   @IsOptional()
   @IsInt()
   @Min(1)
   @Type(() => Number)
-  maxFileSize?: number;
+  width?: number;
+
+  @ApiPropertyOptional({ description: 'Target output height in pixels' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  height?: number;
 }

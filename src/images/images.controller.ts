@@ -45,7 +45,8 @@ export class ImagesController {
       properties: {
         file: { type: 'string', format: 'binary' },
         title: { type: 'string' },
-        maxFileSize: { type: 'integer', minimum: 1 },
+        width: { type: 'integer', minimum: 1 },
+        height: { type: 'integer', minimum: 1 },
       },
     },
   })

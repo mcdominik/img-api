@@ -15,9 +15,6 @@ import { ImageResponseDto } from './dto/image-response.dto.js';
 import { PaginatedImagesResponseDto } from './dto/paginated-images-response.dto.js';
 
 const DEFAULT_QUALITY = 85;
-const MIN_QUALITY = 30;
-const MAX_SCALE_ATTEMPTS = 5;
-const MIN_DIMENSION = 10;
 
 @Injectable()
 export class ImagesService {
@@ -33,7 +30,11 @@ export class ImagesService {
   ): Promise<ImageResponseDto> {
     const id = randomUUID();
     const storageKey = `images/${id}.webp`;
-    const processed = await this.processImage(file.buffer, dto.maxFileSize);
+    const processed = await this.processImage(
+      file.buffer,
+      dto.width,
+      dto.height,
+    );
 
     const url = await this.r2Service.upload(
       storageKey,
@@ -89,7 +90,8 @@ export class ImagesService {
 
   private async processImage(
     buffer: Buffer,
-    maxFileSize?: number,
+    width?: number,
+    height?: number,
   ): Promise<{ buffer: Buffer; width: number; height: number }> {
     try {
       const metadata = await sharp(buffer).metadata();
@@ -97,88 +99,20 @@ export class ImagesService {
         throw new BadRequestException('Unable to read image dimensions.');
       }
 
-      if (!maxFileSize) {
-        const { data, info } = await this.encodeToWebp(
-          buffer,
-          metadata.width,
-          metadata.height,
-          DEFAULT_QUALITY,
-        );
-        return { buffer: data, width: info.width, height: info.height };
-      }
-
-      let width = metadata.width;
-      let height = metadata.height;
-
-      for (let attempt = 0; attempt < MAX_SCALE_ATTEMPTS; attempt++) {
-        const result = await this.findOptimalQuality(
-          buffer,
-          width,
-          height,
-          maxFileSize,
-        );
-        if (result) {
-          return result;
-        }
-
-        const { data, info } = await this.encodeToWebp(
-          buffer,
-          width,
-          height,
-          MIN_QUALITY,
-        );
-
-        if (info.width <= MIN_DIMENSION || info.height <= MIN_DIMENSION) {
-          return { buffer: data, width: info.width, height: info.height };
-        }
-
-        const scaleFactor = Math.sqrt(maxFileSize / data.length) * 0.85;
-        width = Math.max(Math.round(info.width * scaleFactor), MIN_DIMENSION);
-        height = Math.max(Math.round(info.height * scaleFactor), MIN_DIMENSION);
-      }
+      const targetWidth = width ?? metadata.width;
+      const targetHeight = height ?? metadata.height;
 
       const { data, info } = await this.encodeToWebp(
         buffer,
-        width,
-        height,
-        MIN_QUALITY,
+        targetWidth,
+        targetHeight,
+        DEFAULT_QUALITY,
       );
       return { buffer: data, width: info.width, height: info.height };
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       throw new BadRequestException('Failed to process image.');
     }
-  }
-
-  private async findOptimalQuality(
-    buffer: Buffer,
-    width: number,
-    height: number,
-    maxFileSize: number,
-  ): Promise<{ buffer: Buffer; width: number; height: number } | null> {
-    let low = MIN_QUALITY;
-    let high = DEFAULT_QUALITY;
-    let best: { buffer: Buffer; width: number; height: number } | null = null;
-
-    while (low <= high) {
-      // binary search for the optimal quality
-      const quality = Math.round((low + high) / 2);
-      const { data, info } = await this.encodeToWebp(
-        buffer,
-        width,
-        height,
-        quality,
-      );
-
-      if (data.length <= maxFileSize) {
-        best = { buffer: data, width: info.width, height: info.height };
-        low = quality + 1;
-      } else {
-        high = quality - 1;
-      }
-    }
-
-    return best;
   }
 
   private async encodeToWebp(

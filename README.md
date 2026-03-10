@@ -34,9 +34,10 @@ Upload and process an image.
 - **Fields:**
   - `file` (required) — Image file (JPEG, PNG, WebP, GIF). Max 10 MB.
   - `title` (required) — Image title
-  - `maxFileSize` (optional) — Target maximum file size in bytes
+  - `width` (optional) — Target output width in pixels
+  - `height` (optional) — Target output height in pixels
 
-All images are converted to WebP format. When `maxFileSize` is provided, the service iteratively adjusts quality (85–30) and scales dimensions down until the output fits within the target size.
+All images are converted to WebP format at quality 85. When `width` and/or `height` are provided, the image is scaled to fit within those dimensions while preserving the aspect ratio (`fit: inside`). If omitted, the original dimensions are kept.
 
 ### GET /images
 
