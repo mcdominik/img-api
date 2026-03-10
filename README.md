@@ -48,8 +48,8 @@ Get a single image by UUID.
 
 ## Tech Stack
 
-- **Runtime:** Node.js + NestJS
-- **Database:** PostgreSQL (via TypeORM)
+- **Runtime:** Node.js 24 + NestJS
+- **Database:** PostgreSQL 18 (via TypeORM)
 - **Storage:** Cloudflare R2 (S3-compatible)
 - **Image Processing:** Sharp
 - **API Docs:** OpenAPI v3 (Swagger)
