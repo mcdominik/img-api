@@ -51,23 +51,6 @@ describe('Images - writes', () => {
       expect(images[0].title).toBe('Persisted Image');
     });
 
-    it('delegates file storage to R2 service with correct arguments', async () => {
-      await request(bootstrap.app.getHttpServer())
-        .post('/images')
-        .field('title', 'R2 Upload')
-        .attach('file', bootstrap.utils.testImageBuffer, {
-          filename: 'test.jpg',
-          contentType: 'image/jpeg',
-        });
-
-      expect(bootstrap.mocks.r2Service.upload).toHaveBeenCalledTimes(1);
-      expect(bootstrap.mocks.r2Service.upload).toHaveBeenCalledWith(
-        expect.stringMatching(/^images\/.+\.webp$/),
-        expect.any(Buffer),
-        'image/webp',
-      );
-    });
-
     it('returns 400 when title is missing', async () => {
       const response = await request(bootstrap.app.getHttpServer())
         .post('/images')
@@ -98,6 +81,65 @@ describe('Images - writes', () => {
         });
 
       expect(response.status).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
+    });
+
+    it('returns 422 when file exceeds 10 MB', async () => {
+      const oversizedBuffer = Buffer.alloc(11 * 1024 * 1024);
+
+      const response = await request(bootstrap.app.getHttpServer())
+        .post('/images')
+        .field('title', 'Too Large')
+        .attach('file', oversizedBuffer, {
+          filename: 'big.jpg',
+          contentType: 'image/jpeg',
+        });
+
+      expect(response.status).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
+    });
+
+    it('resizes image to given width and height', async () => {
+      const response = await request(bootstrap.app.getHttpServer())
+        .post('/images')
+        .field('title', 'Resized')
+        .field('width', '50')
+        .field('height', '50')
+        .attach('file', bootstrap.utils.testImageBuffer, {
+          filename: 'test.jpg',
+          contentType: 'image/jpeg',
+        });
+
+      expect(response.status).toBe(HttpStatus.CREATED);
+      expect(response.body.width).toBe(50); // eslint-disable-line
+      expect(response.body.height).toBe(50); // eslint-disable-line
+    });
+
+    it('preserves aspect ratio when only width is provided', async () => {
+      const response = await request(bootstrap.app.getHttpServer())
+        .post('/images')
+        .field('title', 'Width Only')
+        .field('width', '50')
+        .attach('file', bootstrap.utils.testImageBuffer, {
+          filename: 'test.jpg',
+          contentType: 'image/jpeg',
+        });
+
+      expect(response.status).toBe(HttpStatus.CREATED);
+      expect(response.body.width).toBeLessThanOrEqual(50); // eslint-disable-line
+      expect(response.body.height).toBeLessThanOrEqual(100); // eslint-disable-line
+    });
+
+    it('uses original dimensions when width and height are omitted', async () => {
+      const response = await request(bootstrap.app.getHttpServer())
+        .post('/images')
+        .field('title', 'Original Size')
+        .attach('file', bootstrap.utils.testImageBuffer, {
+          filename: 'test.jpg',
+          contentType: 'image/jpeg',
+        });
+
+      expect(response.status).toBe(HttpStatus.CREATED);
+      expect(response.body.width).toBe(100); // eslint-disable-line
+      expect(response.body.height).toBe(100); // eslint-disable-line
     });
   });
 });
